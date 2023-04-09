@@ -24,7 +24,7 @@ The project does not have any external dependencies and uses only the libraries 
 ###
 [Download Linux (x86_64)](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_lin_v1)
 
-## Usage
+## Usage (Terminal version)
 Open the binary in your terminal or cmd
 ###
 (Windows) 
