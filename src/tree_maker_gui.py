@@ -49,7 +49,7 @@ class TreeMaker:
             json.dump(tree, f, indent=2)
 
     def create_tree_from_json(self, tree, path):
-        new_path = path / tree["name"]
+        new_path = Path(path) / tree["name"]
         if tree["type"] == "directory":
             new_path.mkdir(parents=True, exist_ok=True)
             for child in tree["children"]:
@@ -145,6 +145,7 @@ class TreeMakerGUI:
 
     def execute(self):
         def execute_thread():
+            tree_maker = TreeMaker()  # Crear una instancia de TreeMaker
             selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
             self.execute_button.config(state=tk.DISABLED)  # Deshabilitar el botón durante la ejecución
 
@@ -157,13 +158,15 @@ class TreeMakerGUI:
                     output_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
                     if output_file:
                         self.result_label.config(text="Generating JSON file...")
-                        TreeMaker.save_tree_json(TreeMaker.generate_tree(folder_path_val), output_file)
+                        folder_path = Path(folder_path_val)  # Convertir la cadena a un objeto Path
+                        tree_maker.save_tree_json(tree_maker.generate_tree(folder_path), output_file)  # Cambio aquí
                         self.result_label.config(text="Done! Generated JSON file: " + output_file)
                     else:
                         self.result_label.config(text="Cancelled JSON file generation.")
 
                 else:
                     self.result_label.config(text="Please select a folder to proceed.")
+
 
             elif selected_tab == "Create Tree":
                 json_file_path_val = self.create_tab.json_file_path.get()
@@ -175,7 +178,7 @@ class TreeMakerGUI:
                     output_folder_path = filedialog.askdirectory()
                     if output_folder_path:
                         self.result_label.config(text="Creating files and folders from JSON...")
-                        TreeMaker.create_tree_from_json(tree, output_folder_path)
+                        tree_maker.create_tree_from_json(tree, output_folder_path)
                         self.result_label.config(text="Done! Created files and folders from JSON.")
                     else:
                         self.result_label.config(text="Cancelled folder creation.")
