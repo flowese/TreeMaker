@@ -1,6 +1,9 @@
 # Tree Maker
 
-This project is a Python script that generates a JSON file with the tree structure of a folder or creates folders and files from a JSON file.
+This project is a Python script that generates a JSON file with the tree structure of a folder or creates folders and files from a JSON file. It works with all types of directories and files. 
+
+Media and binary files are base64 encoded in the JSON file to ensure correct generation of directories from the JSON.
+
 
 ## Installation
 
