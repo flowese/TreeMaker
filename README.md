@@ -64,7 +64,7 @@ tree_maker_lin_v1 -c <input_file.json> # Create tree (folders and files)
     cd tree_maker
     ```
 
-## Usage Dev.
+## Usage (For Developers)
 
 To generate a JSON file with the tree structure of a folder, run the following command:
 ```sh
