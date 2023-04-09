@@ -9,6 +9,7 @@ Usage:  python tree_maker.py generate (-g) <folder_path>
 """
 
 import os
+import sys
 import json
 import base64
 import mimetypes
@@ -74,7 +75,6 @@ def create_tree_from_json(tree, path):
                 f.write(base64.b64decode(content.encode("utf-8")))
 
 if __name__ == "__main__":
-    import sys
 
     if len(sys.argv) < 3:
         print("Usage: python tree_maker.py generate (-g) <folder_path>")
