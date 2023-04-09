@@ -69,6 +69,44 @@ class TreeMaker:
                 f.write(content if mode == 'w' else base64.b64decode(content.encode("utf-8")))
 
 
+class GenerateTab(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        self.folder_path = tk.StringVar()
+        
+        self.create_widgets()
+
+    def create_widgets(self):
+        folder_path_entry = tk.Entry(self, width=50, textvariable=self.folder_path)
+        folder_path_entry.grid(row=0, column=0, padx=10, pady=10)
+
+        browse_folder_button = tk.Button(self, text="Browse Folder", command=self.browse_folder)
+        browse_folder_button.grid(row=0, column=1, padx=10, pady=10)
+
+    def browse_folder(self):
+        self.folder_path.set(filedialog.askdirectory())
+
+
+class CreateTab(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        self.json_file_path = tk.StringVar()
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        json_file_entry = tk.Entry(self, width=50, textvariable=self.json_file_path)
+        json_file_entry.grid(row=0, column=0, padx=10, pady=10)
+
+        browse_json_button = tk.Button(self, text="Browse JSON", command=self.browse_json_file)
+        browse_json_button.grid(row=0, column=1, padx=10, pady=10)
+
+    def browse_json_file(self):
+        self.json_file_path.set(filedialog.askopenfilename(filetypes=[("JSON files", "*.json")]))
+
+
 class TreeMakerGUI:
     def __init__(self):
         self.root = tk.Tk()
@@ -79,29 +117,15 @@ class TreeMakerGUI:
         self.init_ui()
 
     def init_ui(self):
-        self.folder_path = tk.StringVar()
-        self.json_file_path = tk.StringVar()
-
         self.tab_control = ttk.Notebook(self.root)
-        self.generate_tab, self.create_tab = ttk.Frame(self.tab_control), ttk.Frame(self.tab_control)
+        self.generate_tab = GenerateTab(self.tab_control, self)
+        self.create_tab = CreateTab(self.tab_control, self)
 
         self.tab_control.add(self.generate_tab, text="Generate JSON")
         self.tab_control.add(self.create_tab, text="Create Tree")
         self.tab_control.grid(row=0, column=0, padx=10, pady=10)
 
         self.tab_control.bind("<<NotebookTabChanged>>", self.update_execute_button_text)
-
-        self.folder_path_entry = tk.Entry(self.generate_tab, width=50, textvariable=self.folder_path)
-        self.folder_path_entry.grid(row=0, column=0, padx=10, pady=10)
-
-        self.browse_folder_button = tk.Button(self.generate_tab, text="Browse Folder", command=self.browse_folder)
-        self.browse_folder_button.grid(row=0, column=1, padx=10, pady=10)
-
-        self.json_file_entry = tk.Entry(self.create_tab, width=50, textvariable=self.json_file_path)
-        self.json_file_entry.grid(row=0, column=0, padx=10, pady=10)
-
-        self.browse_json_button = tk.Button(self.create_tab, text="Browse JSON", command=self.browse_json_file)
-        self.browse_json_button.grid(row=0, column=1, padx=10, pady=10)
 
         self.execute_button_font = font.Font(size=15)
         self.execute_button_font.configure(weight="bold")
@@ -119,32 +143,41 @@ class TreeMakerGUI:
         elif selected_tab == "Create Tree":
             self.execute_button.config(text="CREATE")
 
-    def browse_folder(self):
-        self.folder_path.set(filedialog.askdirectory())
-
-    def browse_json_file(self):
-        self.json_file_path.set(filedialog.askopenfilename(filetypes=[("JSON files", "*.json")]))
-
     def execute(self):
-        mode = self.tab_control.tab(self.tab_control.select(), "text")
-        folder_path_val = self.folder_path.get()
-        json_file_path_val = self.json_file_path.get()
+        selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
 
-        if mode == "Generate JSON" and folder_path_val:
-            output_file = os.path.basename(os.path.abspath(folder_path_val)) + ".json"
-            self.result_label.config(text="Generating JSON file...")
-            TreeMaker.save_tree_json(TreeMaker.generate_tree(folder_path_val), output_file)
-            self.result_label.config(text="Done! Generated JSON file: " + output_file)
-        elif mode == "Create Tree" and json_file_path_val:
-            with open(json_file_path_val, "r") as f:
-                tree = json.load(f)
+        if selected_tab == "Generate JSON":
+            folder_path_val = self.generate_tab.folder_path.get()
 
-            output_folder_path = os.path.splitext(json_file_path_val)[0]
-            self.result_label.config(text="Creating files and folders from JSON...")
-            TreeMaker.create_tree_from_json(tree, output_folder_path)
-            self.result_label.config(text="Done! Created files and folders from JSON.")
-        else:
-            self.result_label.config(text="Please select a path to proceed.")
+            if folder_path_val:
+                output_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+                if output_file:
+                    self.result_label.config(text="Generating JSON file...")
+                    TreeMaker.save_tree_json(TreeMaker.generate_tree(folder_path_val), output_file)
+                    self.result_label.config(text="Done! Generated JSON file: " + output_file)
+                else:
+                    self.result_label.config(text="Cancelled JSON file generation.")
+
+            else:
+                self.result_label.config(text="Please select a folder to proceed.")
+
+        elif selected_tab == "Create Tree":
+            json_file_path_val = self.create_tab.json_file_path.get()
+
+            if json_file_path_val:
+                with open(json_file_path_val, "r") as f:
+                    tree = json.load(f)
+
+                output_folder_path = filedialog.askdirectory()
+                if output_folder_path:
+                    self.result_label.config(text="Creating files and folders from JSON...")
+                    TreeMaker.create_tree_from_json(tree, output_folder_path)
+                    self.result_label.config(text="Done! Created files and folders from JSON.")
+                else:
+                    self.result_label.config(text="Cancelled folder creation.")
+
+            else:
+                self.result_label.config(text="Please select a JSON file to proceed.")
 
     def run(self):
         self.root.mainloop()
