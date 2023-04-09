@@ -51,7 +51,7 @@ tree_maker_lin_v1 -g <folder_path> # Generate json
 tree_maker_lin_v1 -c <input_file.json> # Create tree (folders and files)
 ```
 
-## For Devs. Installation
+## For Developers - Installation
 
 1. Clone the repository:
 
