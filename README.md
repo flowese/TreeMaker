@@ -4,6 +4,7 @@ This project is a Python script that generates a JSON file with the tree structu
 
 Media and binary files are base64 encoded in the JSON file to ensure correct generation of directories from the JSON.
 
+The project does not have any external dependencies and uses only the libraries included by default in Python.
 
 ## Installation
 
@@ -48,4 +49,3 @@ python tree_maker.py create example.json
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
