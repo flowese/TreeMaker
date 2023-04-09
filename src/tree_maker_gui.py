@@ -1,16 +1,15 @@
-import os
 import json
 import base64
 import zlib
 import mimetypes
 import tkinter as tk
 from tkinter import ttk, font, filedialog
-import threading 
+import threading
+from pathlib import Path
 
 
 class TreeMaker:
-    @staticmethod
-    def read_file_content(file_path):
+    def read_file_content(self, file_path):
         mime_type, _ = mimetypes.guess_type(file_path)
         is_text = mime_type and mime_type.startswith("text")
 
@@ -25,45 +24,39 @@ class TreeMaker:
 
         return base64.b64encode(content).decode("utf-8")
 
-    @staticmethod
-    def compress_content(content):
+    def compress_content(self, content):
         return base64.b64encode(zlib.compress(content.encode("utf-8"))).decode("utf-8")
 
-    @staticmethod
-    def decompress_content(content):
+    def decompress_content(self, content):
         return zlib.decompress(base64.b64decode(content.encode("utf-8"))).decode("utf-8")
 
-    @staticmethod
-    def generate_tree(path):
-        if not os.path.exists(path):
+    def generate_tree(self, path):
+        if not path.exists():
             return None
 
-        tree = {"type": "directory", "name": os.path.basename(path), "children": []}
-        for element in sorted(os.listdir(path)):
-            element_path = os.path.join(path, element)
-            tree["children"].append(TreeMaker.generate_tree(element_path) if os.path.isdir(element_path) else {
+        tree = {"type": "directory", "name": path.name, "children": []}
+        for element in sorted(path.iterdir()):
+            tree["children"].append(self.generate_tree(element) if element.is_dir() else {
                 "type": "file",
-                "name": element,
-                "content": TreeMaker.compress_content(TreeMaker.read_file_content(element_path))
+                "name": element.name,
+                "content": self.compress_content(self.read_file_content(element))
             })
 
         return tree
 
-    @staticmethod
-    def save_tree_json(tree, output_file):
+    def save_tree_json(self, tree, output_file):
         with open(output_file, "w") as f:
             json.dump(tree, f, indent=2)
 
-    @staticmethod
-    def create_tree_from_json(tree, path):
-        new_path = os.path.join(path, tree["name"])
+    def create_tree_from_json(self, tree, path):
+        new_path = path / tree["name"]
         if tree["type"] == "directory":
-            os.makedirs(new_path, exist_ok=True)
+            new_path.mkdir(parents=True, exist_ok=True)
             for child in tree["children"]:
-                TreeMaker.create_tree_from_json(child, new_path)
+                self.create_tree_from_json(child, new_path)
         else:
             mime_type, _ = mimetypes.guess_type(tree["name"])
-            content = TreeMaker.decompress_content(tree["content"])
+            content = self.decompress_content(tree["content"])
             mode = 'w' if mime_type and mime_type.startswith("text") else 'wb'
 
             with open(new_path, mode) as f:
@@ -75,15 +68,18 @@ class GenerateTab(ttk.Frame):
         super().__init__(parent)
         self.controller = controller
         self.folder_path = tk.StringVar()
-        
+
         self.create_widgets()
 
     def create_widgets(self):
+        folder_path_label = tk.Label(self, text="Select folder:")
+        folder_path_label.grid(row=0, column=0, padx=(10, 0), pady=10, sticky="e")
+
         folder_path_entry = tk.Entry(self, width=50, textvariable=self.folder_path)
-        folder_path_entry.grid(row=0, column=0, padx=10, pady=10)
+        folder_path_entry.grid(row=0, column=1, padx=(10, 10), pady=10)
 
         browse_folder_button = tk.Button(self, text="Browse Folder", command=self.browse_folder)
-        browse_folder_button.grid(row=0, column=1, padx=10, pady=10)
+        browse_folder_button.grid(row=0, column=2, padx=(0, 10), pady=10)
 
     def browse_folder(self):
         self.folder_path.set(filedialog.askdirectory())
@@ -98,11 +94,14 @@ class CreateTab(ttk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
+        json_file_label = tk.Label(self, text="Select JSON file:")
+        json_file_label.grid(row=0, column=0, padx=(10, 0), pady=10, sticky="e")
+
         json_file_entry = tk.Entry(self, width=50, textvariable=self.json_file_path)
-        json_file_entry.grid(row=0, column=0, padx=10, pady=10)
+        json_file_entry.grid(row=0, column=1, padx=(10, 10), pady=10)
 
         browse_json_button = tk.Button(self, text="Browse JSON", command=self.browse_json_file)
-        browse_json_button.grid(row=0, column=1, padx=10, pady=10)
+        browse_json_button.grid(row=0, column=2, padx=(0, 10), pady=10)
 
     def browse_json_file(self):
         self.json_file_path.set(filedialog.askopenfilename(filetypes=[("JSON files", "*.json")]))
@@ -113,7 +112,7 @@ class TreeMakerGUI:
         self.root = tk.Tk()
         self.root.title("Tree Maker")
         self.root.resizable(False, False)
-        self.root.geometry("700x200")
+        self.root.geometry("800x200")
 
         self.init_ui()
 
@@ -132,10 +131,10 @@ class TreeMakerGUI:
         self.execute_button_font.configure(weight="bold")
         self.execute_button = tk.Button(self.root, text="Generate", command=self.execute, font=self.execute_button_font)
         self.execute_button.config(width=10, height=1)
-        self.execute_button.grid(row=1, column=0, padx=10, pady=0)
+        self.execute_button.grid(row=1, column=0, padx=10, pady=(0, 10))  # Cambiar el valor de pady aquí
 
         self.result_label = tk.Label(self.root, text="")
-        self.result_label.grid(row=2, column=0, padx=10, pady=10)
+        self.result_label.grid(row=2, column=0, padx=10, pady=(0, 10))
 
     def update_execute_button_text(self, event):
         selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
