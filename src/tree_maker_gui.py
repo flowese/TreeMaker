@@ -5,6 +5,7 @@ import zlib
 import mimetypes
 import tkinter as tk
 from tkinter import ttk, font, filedialog
+import threading 
 
 
 class TreeMaker:
@@ -144,40 +145,51 @@ class TreeMakerGUI:
             self.execute_button.config(text="CREATE")
 
     def execute(self):
-        selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
+        def execute_thread():
+            selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
+            self.execute_button.config(state=tk.DISABLED)  # Deshabilitar el botón durante la ejecución
 
-        if selected_tab == "Generate JSON":
-            folder_path_val = self.generate_tab.folder_path.get()
+            selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
 
-            if folder_path_val:
-                output_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
-                if output_file:
-                    self.result_label.config(text="Generating JSON file...")
-                    TreeMaker.save_tree_json(TreeMaker.generate_tree(folder_path_val), output_file)
-                    self.result_label.config(text="Done! Generated JSON file: " + output_file)
+            if selected_tab == "Generate JSON":
+                folder_path_val = self.generate_tab.folder_path.get()
+
+                if folder_path_val:
+                    output_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+                    if output_file:
+                        self.result_label.config(text="Generating JSON file...")
+                        TreeMaker.save_tree_json(TreeMaker.generate_tree(folder_path_val), output_file)
+                        self.result_label.config(text="Done! Generated JSON file: " + output_file)
+                    else:
+                        self.result_label.config(text="Cancelled JSON file generation.")
+
                 else:
-                    self.result_label.config(text="Cancelled JSON file generation.")
+                    self.result_label.config(text="Please select a folder to proceed.")
 
-            else:
-                self.result_label.config(text="Please select a folder to proceed.")
+            elif selected_tab == "Create Tree":
+                json_file_path_val = self.create_tab.json_file_path.get()
 
-        elif selected_tab == "Create Tree":
-            json_file_path_val = self.create_tab.json_file_path.get()
+                if json_file_path_val:
+                    with open(json_file_path_val, "r") as f:
+                        tree = json.load(f)
 
-            if json_file_path_val:
-                with open(json_file_path_val, "r") as f:
-                    tree = json.load(f)
+                    output_folder_path = filedialog.askdirectory()
+                    if output_folder_path:
+                        self.result_label.config(text="Creating files and folders from JSON...")
+                        TreeMaker.create_tree_from_json(tree, output_folder_path)
+                        self.result_label.config(text="Done! Created files and folders from JSON.")
+                    else:
+                        self.result_label.config(text="Cancelled folder creation.")
 
-                output_folder_path = filedialog.askdirectory()
-                if output_folder_path:
-                    self.result_label.config(text="Creating files and folders from JSON...")
-                    TreeMaker.create_tree_from_json(tree, output_folder_path)
-                    self.result_label.config(text="Done! Created files and folders from JSON.")
                 else:
-                    self.result_label.config(text="Cancelled folder creation.")
+                    self.result_label.config(text="Please select a JSON file to proceed.")
 
-            else:
-                self.result_label.config(text="Please select a JSON file to proceed.")
+            self.execute_button.config(state=tk.NORMAL)  # Habilitar el botón al finalizar la ejecución
+
+        # Crear y ejecutar un hilo para realizar la tarea sin bloquear la GUI
+        execution_thread = threading.Thread(target=execute_thread)
+        execution_thread.start()
+
 
     def run(self):
         self.root.mainloop()
