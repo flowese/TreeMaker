@@ -16,11 +16,29 @@ The project does not have any external dependencies and uses only the libraries 
 [Download Linux (x86_64)](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_lin_v1)
 
 ## Usage
-### Open binary on terminal or cmd:
-(Example for Windows) 
+Open binary on terminal or cmd
+(Example Windows) 
 
 ```bash
-tree_maker.exe -g <folder_path>
+tree_maker.exe -g <folder_path> # Generate json
+
+tree_maker.exe -c <input_file.json> # Create tree (folders and files)
+```
+
+(Example OSX) 
+
+```bash
+tree_maker_osx_v1 -g <folder_path> # Generate json
+
+tree_maker_osx_v1 -c <input_file.json> # Create tree (folders and files)
+```
+
+(Example Linux) 
+
+```bash
+tree_maker_lin_v1 -g <folder_path> # Generate json
+
+tree_maker_lin_v1 -c <input_file.json> # Create tree (folders and files)
 ```
 
 ## For Devs. Installation
