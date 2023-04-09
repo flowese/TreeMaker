@@ -6,7 +6,11 @@ Media and binary files are base64 encoded in the JSON file to ensure correct gen
 
 The project does not have any external dependencies and uses only the libraries included by default in Python.
 
-## Installation
+Simply download binaries for your system:
+
+[OSX](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_osx_v1)
+
+## Dev Installation
 
 1. Clone the repository:
 
