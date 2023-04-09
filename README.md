@@ -31,7 +31,7 @@ To create folders and files from a JSON file, run the following command:
 python tree_maker.py create <input_file.json>
 ```
 
-##Examples
+## Examples
 To generate a JSON file with the tree structure of the current directory, run the following command:
 ```sh
 python tree_maker.py generate .
