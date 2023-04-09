@@ -11,9 +11,9 @@ Just download the binaries for your system:
 ###
 [Download Windows (x86_64)](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_win_v1)
 ###
-[Download MacOSX (x86_64](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_osx_v1)
+[Download MacOSX (x86_64)](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_osx_v1)
 ###
-[Download Linux (x86_64](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_lin_v1)
+[Download Linux (x86_64)](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_lin_v1)
 
 ## For Devs. Installation
 
