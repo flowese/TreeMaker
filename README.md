@@ -9,7 +9,7 @@ The project does not have any external dependencies and uses only the libraries 
 Just download the binaries for your system:
 
 ###
-[Download Windows (x86_64)](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_win_v1)
+[Download Windows (x86_64)](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_win_v1.exe)
 ###
 [Download MacOSX (x86_64)](https://github.com/flowese/tree_maker/releases/download/tree_maker_v1/tree_maker_osx_v1)
 ###
