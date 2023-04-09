@@ -18,7 +18,7 @@ The project does not have any external dependencies and uses only the libraries 
 ## Usage
 Open the binary in your terminal or cmd
 ###
-(Example Windows) 
+(Windows) 
 
 ```bash
 tree_maker.exe -g <folder_path> # Generate json
@@ -26,7 +26,7 @@ tree_maker.exe -g <folder_path> # Generate json
 tree_maker.exe -c <input_file.json> # Create tree (folders and files)
 ```
 
-(Example OSX) 
+(OSX) 
 
 ```bash
 tree_maker_osx_v1 -g <folder_path> # Generate json
@@ -34,7 +34,7 @@ tree_maker_osx_v1 -g <folder_path> # Generate json
 tree_maker_osx_v1 -c <input_file.json> # Create tree (folders and files)
 ```
 
-(Example Linux) 
+(Linux) 
 
 ```bash
 tree_maker_lin_v1 -g <folder_path> # Generate json
