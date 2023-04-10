@@ -8,6 +8,52 @@ import threading
 from pathlib import Path
 import argparse
 import sys
+import locale
+
+
+# Get the system language and define translations
+system_lang = locale.getdefaultlocale()[0]
+
+texts = {
+    "en_US": {
+        "select_folder": "Select folder:",
+        "browse_folder": "Browse Folder",
+        "select_json": "Select JSON file:",
+        "browse_json": "Browse JSON",
+        "generate_json": "Generate JSON",
+        "create_tree": "Create Tree",
+        "please_select_folder": "Please select a folder to proceed.",
+        "please_select_json": "Please select a JSON file to proceed.",
+        "cancelled_json_generation": "Cancelled JSON file generation.",
+        "cancelled_folder_creation": "Cancelled folder creation.",
+        "generating_json": "Generating JSON file...",
+        "creating_files_folders": "Creating files and folders from JSON...",
+        "done_generated_json": "Done! Generated JSON file: ",
+        "done_created_files_folders": "Done! Created files and folders from JSON."
+    },
+    "es_ES": {
+        "select_folder": "Seleccione la carpeta:",
+        "browse_folder": "Examinar carpeta",
+        "select_json": "Seleccione el JSON:",
+        "browse_json": "Examinar JSON",
+        "generate_json": "Generar JSON",
+        "create_tree": "Crear árbol",
+        "please_select_folder": "Por favor, seleccione una carpeta para continuar.",
+        "please_select_json": "Por favor, seleccione un archivo JSON para continuar.",
+        "cancelled_json_generation": "Se canceló la generación del archivo JSON.",
+        "cancelled_folder_creation": "Se canceló la creación de la carpeta.",
+        "generating_json": "Generando archivo JSON...",
+        "creating_files_folders": "Creando archivos y carpetas desde JSON...",
+        "done_generated_json": "¡Listo! Archivo JSON generado: ",
+        "done_created_files_folders": "¡Listo! Archivos y carpetas creados desde JSON."
+    }
+}
+
+def get_text(key):
+    if system_lang in texts:
+        return texts[system_lang][key]
+    else:
+        return texts["en_US"][key]
 
 
 class TreeMaker:
@@ -81,13 +127,13 @@ class GenerateTab(ttk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        folder_path_label = tk.Label(self, text="Select folder:")
+        folder_path_label = tk.Label(self, text=get_text("select_folder"))
         folder_path_label.grid(row=0, column=0, padx=(10, 0), pady=10, sticky="e")
 
         folder_path_entry = tk.Entry(self, width=50, textvariable=self.folder_path)
         folder_path_entry.grid(row=0, column=1, padx=(10, 10), pady=10)
 
-        browse_folder_button = tk.Button(self, text="Browse Folder", command=self.browse_folder)
+        browse_folder_button = tk.Button(self, text=get_text("browse_folder"), command=self.browse_folder)
         browse_folder_button.grid(row=0, column=2, padx=(0, 10), pady=10)
 
     def browse_folder(self):
@@ -103,14 +149,15 @@ class CreateTab(ttk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        json_file_label = tk.Label(self, text="Select JSON file:")
+        json_file_label = tk.Label(self, text=get_text("select_json"))
         json_file_label.grid(row=0, column=0, padx=(10, 0), pady=10, sticky="e")
 
         json_file_entry = tk.Entry(self, width=50, textvariable=self.json_file_path)
         json_file_entry.grid(row=0, column=1, padx=(10, 10), pady=10)
 
-        browse_json_button = tk.Button(self, text="Browse JSON", command=self.browse_json_file)
+        browse_json_button = tk.Button(self, text=get_text("browse_json"), command=self.browse_json_file)
         browse_json_button.grid(row=0, column=2, padx=(0, 10), pady=10)
+
 
     def browse_json_file(self):
         self.json_file_path.set(filedialog.askopenfilename(filetypes=[("JSON files", "*.json")]))
@@ -152,7 +199,7 @@ class TreeMakerGUI:
         self.root = tk.Tk()
         self.root.title("Tree Maker")
         self.root.resizable(False, False)
-        self.root.geometry("800x200")
+        self.root.geometry("880x200")
 
         self.init_ui()
 
