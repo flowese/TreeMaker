@@ -22,13 +22,15 @@ class TreeMaker:
             except UnicodeDecodeError:
                 pass
 
-        return base64.b64encode(content).decode("utf-8")
+        compressed_content = zlib.compress(content)
+        return base64.b64encode(compressed_content).decode("utf-8")
 
-    def compress_content(self, content):
-        return base64.b64encode(zlib.compress(content.encode("utf-8"))).decode("utf-8")
+    def decompress_content(self, content, is_text):
+        if is_text:
+            return content
 
-    def decompress_content(self, content):
-        return zlib.decompress(base64.b64decode(content.encode("utf-8"))).decode("utf-8")
+        compressed_content = base64.b64decode(content.encode("utf-8"))
+        return zlib.decompress(compressed_content)
 
     def generate_tree(self, path):
         if not path.exists():
@@ -36,11 +38,17 @@ class TreeMaker:
 
         tree = {"type": "directory", "name": path.name, "children": []}
         for element in sorted(path.iterdir()):
-            tree["children"].append(self.generate_tree(element) if element.is_dir() else {
-                "type": "file",
-                "name": element.name,
-                "content": self.compress_content(self.read_file_content(element))
-            })
+            if element.is_dir():
+                tree["children"].append(self.generate_tree(element))
+            else:
+                mime_type, _ = mimetypes.guess_type(element)
+                is_text = mime_type and mime_type.startswith("text")
+                tree["children"].append({
+                    "type": "file",
+                    "name": element.name,
+                    "content": self.read_file_content(element),
+                    "is_text": is_text
+                })
 
         return tree
 
@@ -55,12 +63,11 @@ class TreeMaker:
             for child in tree["children"]:
                 self.create_tree_from_json(child, new_path)
         else:
-            mime_type, _ = mimetypes.guess_type(tree["name"])
-            content = self.decompress_content(tree["content"])
-            mode = 'w' if mime_type and mime_type.startswith("text") else 'wb'
+            content = self.decompress_content(tree["content"], tree["is_text"])
+            mode = 'w' if tree["is_text"] else 'wb'
 
             with open(new_path, mode) as f:
-                f.write(content if mode == 'w' else base64.b64decode(content.encode("utf-8")))
+                f.write(content)
 
 
 class GenerateTab(ttk.Frame):
