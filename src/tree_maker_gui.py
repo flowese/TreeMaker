@@ -6,6 +6,8 @@ import tkinter as tk
 from tkinter import ttk, font, filedialog
 import threading
 from pathlib import Path
+import argparse
+import sys
 
 
 class TreeMaker:
@@ -114,6 +116,37 @@ class CreateTab(ttk.Frame):
         self.json_file_path.set(filedialog.askopenfilename(filetypes=[("JSON files", "*.json")]))
 
 
+class TreeMakerCLI:
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description="Tree Maker - Create JSON files representing a directory tree and recreate the directory tree from JSON files.")
+        subparsers = self.parser.add_subparsers(dest="command", required=True)
+
+        generate_parser = subparsers.add_parser("generate", aliases=["-g"], help="Generate a JSON file representing a directory tree.")
+        generate_parser.add_argument("folder_path", type=str, help="Path to the directory you want to represent in a JSON file.")
+
+        create_parser = subparsers.add_parser("create", aliases=["-c"], help="Create a directory tree from a JSON file.")
+        create_parser.add_argument("input_file", type=str, help="Path to the JSON file representing the directory tree.")
+
+    def run(self):
+        args = self.parser.parse_args()
+        tree_maker = TreeMaker()
+
+        if args.command == "generate" or args.command == "-g":
+            folder_path = Path(args.folder_path)
+            output_file = f"{folder_path.name}.json"
+            tree_maker.save_tree_json(tree_maker.generate_tree(folder_path), output_file)
+            print(f"Generated JSON file: {output_file}")
+
+        elif args.command == "create" or args.command == "-c":
+            with open(args.input_file, "r") as f:
+                tree = json.load(f)
+
+            output_folder_path = input("Enter the path where you want to create the directory tree: ")
+            tree_maker.create_tree_from_json(tree, output_folder_path)
+            print(f"Created files and folders from JSON in {output_folder_path}")
+
+
+
 class TreeMakerGUI:
     def __init__(self):
         self.root = tk.Tk()
@@ -204,6 +237,15 @@ class TreeMakerGUI:
         self.root.mainloop()
 
 
+def main():
+    if len(sys.argv) > 1:  # Si hay argumentos en la línea de comandos, usar la interfaz de línea de comandos
+        cli = TreeMakerCLI()
+        cli.run()
+    else:  # De lo contrario, usar la interfaz gráfica de usuario
+        app = TreeMakerGUI()
+        app.run()
+
+
 if __name__ == "__main__":
-    app = TreeMakerGUI()
-    app.run()
+    main()
+
