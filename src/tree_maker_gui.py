@@ -14,12 +14,13 @@ def get_text(key):
     translations = {
         "en": {
             "select_folder": "Select folder:",
-            "browse_folder": "Browse Folder",
-            "select_json": "Select JSON file:",
-            "browse_json": "Browse JSON",
-            "generate_json": "Generate JSON",
-            "create_tree": "Create Tree",
+            "browse_folder": "Browse",
+            "select_json": "Select JSON:",
+            "browse_json": "Browse",
+            "generate_json": "Generate",
+            "create_tree": "Create",
             "generating_json": "Generating JSON file...",
+            "generating_tree": "Generating tree...",
             "done_generated_json": "Done! Generated JSON file: ",
             "cancelled_json_generation": "Cancelled JSON file generation.",
             "please_select_folder": "Please select a folder to proceed.",
@@ -30,12 +31,13 @@ def get_text(key):
         },
         "es": {
             "select_folder": "Seleccionar carpeta:",
-            "browse_folder": "Buscar carpeta",
-            "select_json": "Seleccionar archivo JSON:",
-            "browse_json": "Buscar JSON",
-            "generate_json": "Generar JSON",
-            "create_tree": "Crear árbol",
+            "browse_folder": "Examinar",
+            "select_json": "Seleccionar JSON:",
+            "browse_json": "Examinar",
+            "generate_json": "Generar",
+            "create_tree": "Crear",
             "generating_json": "Generando archivo JSON...",
+            "generating_tree": "Generando árbol...",
             "done_generated_json": "¡Listo! Archivo JSON generado: ",
             "cancelled_json_generation": "Se canceló la generación del archivo JSON.",
             "please_select_folder": "Por favor, seleccione una carpeta para continuar.",
@@ -126,16 +128,32 @@ class GenerateTab(ttk.Frame):
 
     def create_widgets(self):
         folder_path_label = tk.Label(self, text=get_text("select_folder"))
-        folder_path_label.grid(row=0, column=0, padx=(10, 0), pady=10, sticky="e")
+        folder_path_label.grid(row=0, column=0, padx=(10, 0), pady=3, sticky="e")
 
         folder_path_entry = tk.Entry(self, width=50, textvariable=self.folder_path)
-        folder_path_entry.grid(row=0, column=1, padx=(10, 10), pady=10)
+        folder_path_entry.grid(row=0, column=1, padx=(10, 10), pady=3)
 
         browse_folder_button = tk.Button(self, text=get_text("browse_folder"), command=self.browse_folder)
-        browse_folder_button.grid(row=0, column=2, padx=(0, 10), pady=10)
+        browse_folder_button.grid(row=0, column=2, padx=(0, 10), pady=3)
+
 
     def browse_folder(self):
         self.folder_path.set(filedialog.askdirectory())
+
+    def generate_tree(self):
+        folder_path_val = self.folder_path.get()
+
+        if folder_path_val:
+            output_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+            if output_file:
+                tree_maker = TreeMaker()
+                folder_path = Path(folder_path_val)
+                tree_maker.save_tree_json(tree_maker.generate_tree(folder_path), output_file)
+            else:
+                print("Cancelled JSON file generation.")
+        else:
+            print("Please select a folder to proceed.")
+
 
 
 class CreateTab(ttk.Frame):
@@ -148,17 +166,33 @@ class CreateTab(ttk.Frame):
 
     def create_widgets(self):
         json_file_label = tk.Label(self, text=get_text("select_json"))
-        json_file_label.grid(row=0, column=0, padx=(10, 0), pady=10, sticky="e")
+        json_file_label.grid(row=0, column=0, padx=(10, 0), pady=3, sticky="e")
 
         json_file_entry = tk.Entry(self, width=50, textvariable=self.json_file_path)
-        json_file_entry.grid(row=0, column=1, padx=(10, 10), pady=10)
+        json_file_entry.grid(row=0, column=1, padx=(10, 10), pady=3)
 
         browse_json_button = tk.Button(self, text=get_text("browse_json"), command=self.browse_json_file)
-        browse_json_button.grid(row=0, column=2, padx=(0, 10), pady=10)
+        browse_json_button.grid(row=0, column=2, padx=(0, 10), pady=3)
 
 
     def browse_json_file(self):
         self.json_file_path.set(filedialog.askopenfilename(filetypes=[("JSON files", "*.json")]))
+
+    def create_tree(self):
+        json_file_path_val = self.json_file_path.get()
+
+        if json_file_path_val:
+            with open(json_file_path_val, "r") as f:
+                tree = json.load(f)
+
+            output_folder_path = filedialog.askdirectory()
+            if output_folder_path:
+                tree_maker = TreeMaker()
+                tree_maker.create_tree_from_json(tree, output_folder_path)
+            else:
+                print("Cancelled folder creation.")
+        else:
+            print("Please select a JSON file to proceed.")
 
 
 class TreeMakerCLI:
@@ -197,7 +231,7 @@ class TreeMakerGUI:
         self.root = tk.Tk()
         self.root.title("Tree Maker")
         self.root.resizable(False, False)
-        self.root.geometry("880x200")
+        self.root.geometry("850x180")
 
         self.init_ui()
 
@@ -208,7 +242,7 @@ class TreeMakerGUI:
 
         self.tab_control.add(self.generate_tab, text=get_text("generate_json"))
         self.tab_control.add(self.create_tab, text=get_text("create_tree"))
-        self.tab_control.grid(row=0, column=0, padx=10, pady=10)
+        self.tab_control.place(relx=0.5, rely=0.5, anchor=tk.CENTER, relwidth=0.9)
 
         self.tab_control.bind("<<NotebookTabChanged>>", self.update_execute_button_text)
 
@@ -216,10 +250,9 @@ class TreeMakerGUI:
         self.execute_button_font.configure(weight="bold")
         self.execute_button = tk.Button(self.root, text="Generate", command=self.execute, font=self.execute_button_font)
         self.execute_button.config(width=10, height=1)
-        self.execute_button.grid(row=1, column=0, padx=10, pady=(0, 10))  # Cambiar el valor de pady aquí
-
+        self.execute_button.place(relx=0.5, rely=0.75, anchor=tk.CENTER)
         self.result_label = tk.Label(self.root, text="")
-        self.result_label.grid(row=2, column=0, padx=10, pady=(0, 10))
+        self.result_label.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
 
     def update_execute_button_text(self, event):
         selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
@@ -230,55 +263,50 @@ class TreeMakerGUI:
 
 
     def execute(self):
-        def execute_thread():
-            tree_maker = TreeMaker()  # Crear una instancia de TreeMaker
+        def execute_thread(output_file):
+            tree_maker = TreeMaker()
             selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
-            self.execute_button.config(state=tk.DISABLED)  # Deshabilitar el botón durante la ejecución
+            self.execute_button.config(state=tk.DISABLED)
 
-            selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
-
-            if selected_tab == "Generate JSON":
+            if selected_tab == get_text("generate_json"):
                 folder_path_val = self.generate_tab.folder_path.get()
-
                 if folder_path_val:
-                    output_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
-                    if output_file:
-                        self.result_label.config(text=get_text("generating_json"))
-
-                        folder_path = Path(folder_path_val)  # Convertir la cadena a un objeto Path
-                        tree_maker.save_tree_json(tree_maker.generate_tree(folder_path), output_file)  # Cambio aquí
-                        self.result_label.config(text=get_text("generated_json"))
-                    else:
-                        self.result_label.config(text=get_text("cancelled_json_generation"))
-
+                    self.result_label.config(text=get_text("generating_json"))
+                    folder_path = Path(folder_path_val)
+                    tree_maker.save_tree_json(tree_maker.generate_tree(folder_path), output_file)
+                    self.result_label.config(text=get_text("done_generated_json"))
                 else:
-                    self.result_label.config(text=get_text("select_folder_to_proceed"))
+                    self.result_label.config(text=get_text("please_select_folder"))
 
-
-            elif selected_tab == "Create Tree":
+            elif selected_tab == get_text("create_tree"):
                 json_file_path_val = self.create_tab.json_file_path.get()
-
                 if json_file_path_val:
                     with open(json_file_path_val, "r") as f:
                         tree = json.load(f)
-
                     output_folder_path = filedialog.askdirectory()
                     if output_folder_path:
-                        self.result_label.config(text="Creating files and folders from JSON...")
+                        self.result_label.config(text=get_text("creating_files_folders"))
                         tree_maker.create_tree_from_json(tree, output_folder_path)
-                        self.result_label.config(text="Done! Created files and folders from JSON.")
+                        self.result_label.config(text=get_text("done_created_files_folders"))
                     else:
-                        self.result_label.config(text="Cancelled folder creation.")
-
+                        self.result_label.config(text=get_text("cancelled_folder_creation"))
                 else:
-                    self.result_label.config(text="Please select a JSON file to proceed.")
+                    self.result_label.config(text=get_text("please_select_json"))
 
-            self.execute_button.config(state=tk.NORMAL)  # Habilitar el botón al finalizar la ejecución
+            self.execute_button.config(state=tk.NORMAL)
 
-        # Crear y ejecutar un hilo para realizar la tarea sin bloquear la GUI
-        execution_thread = threading.Thread(target=execute_thread)
-        execution_thread.start()
+        selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
 
+        if selected_tab == get_text("generate_json"):
+            output_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+            if not output_file:
+                self.result_label.config(text=get_text("cancelled_json_generation"))
+                return
+            execution_thread = threading.Thread(target=execute_thread, args=(output_file,))
+            execution_thread.start()
+        elif selected_tab == get_text("create_tree"):
+            execution_thread = threading.Thread(target=execute_thread, args=(None,))
+            execution_thread.start()
 
     def run(self):
         self.root.mainloop()
