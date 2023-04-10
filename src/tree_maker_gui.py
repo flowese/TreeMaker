@@ -10,50 +10,48 @@ import argparse
 import sys
 import locale
 
-
-# Get the system language and define translations
-system_lang = locale.getdefaultlocale()[0]
-
-texts = {
-    "en_US": {
-        "select_folder": "Select folder:",
-        "browse_folder": "Browse Folder",
-        "select_json": "Select JSON file:",
-        "browse_json": "Browse JSON",
-        "generate_json": "Generate JSON",
-        "create_tree": "Create Tree",
-        "please_select_folder": "Please select a folder to proceed.",
-        "please_select_json": "Please select a JSON file to proceed.",
-        "cancelled_json_generation": "Cancelled JSON file generation.",
-        "cancelled_folder_creation": "Cancelled folder creation.",
-        "generating_json": "Generating JSON file...",
-        "creating_files_folders": "Creating files and folders from JSON...",
-        "done_generated_json": "Done! Generated JSON file: ",
-        "done_created_files_folders": "Done! Created files and folders from JSON."
-    },
-    "es_ES": {
-        "select_folder": "Seleccione la carpeta:",
-        "browse_folder": "Examinar carpeta",
-        "select_json": "Seleccione el JSON:",
-        "browse_json": "Examinar JSON",
-        "generate_json": "Generar JSON",
-        "create_tree": "Crear árbol",
-        "please_select_folder": "Por favor, seleccione una carpeta para continuar.",
-        "please_select_json": "Por favor, seleccione un archivo JSON para continuar.",
-        "cancelled_json_generation": "Se canceló la generación del archivo JSON.",
-        "cancelled_folder_creation": "Se canceló la creación de la carpeta.",
-        "generating_json": "Generando archivo JSON...",
-        "creating_files_folders": "Creando archivos y carpetas desde JSON...",
-        "done_generated_json": "¡Listo! Archivo JSON generado: ",
-        "done_created_files_folders": "¡Listo! Archivos y carpetas creados desde JSON."
-    }
-}
-
 def get_text(key):
-    if system_lang in texts:
-        return texts[system_lang][key]
+    translations = {
+        "en": {
+            "select_folder": "Select folder:",
+            "browse_folder": "Browse Folder",
+            "select_json": "Select JSON file:",
+            "browse_json": "Browse JSON",
+            "generate_json": "Generate JSON",
+            "create_tree": "Create Tree",
+            "generating_json": "Generating JSON file...",
+            "done_generated_json": "Done! Generated JSON file: ",
+            "cancelled_json_generation": "Cancelled JSON file generation.",
+            "please_select_folder": "Please select a folder to proceed.",
+            "please_select_json": "Please select a JSON file to proceed.",
+            "cancelled_folder_creation": "Cancelled folder creation.",
+            "creating_files_folders": "Creating files and folders from JSON...",
+            "done_created_files_folders": "Done! Created files and folders from JSON."
+        },
+        "es": {
+            "select_folder": "Seleccionar carpeta:",
+            "browse_folder": "Buscar carpeta",
+            "select_json": "Seleccionar archivo JSON:",
+            "browse_json": "Buscar JSON",
+            "generate_json": "Generar JSON",
+            "create_tree": "Crear árbol",
+            "generating_json": "Generando archivo JSON...",
+            "done_generated_json": "¡Listo! Archivo JSON generado: ",
+            "cancelled_json_generation": "Se canceló la generación del archivo JSON.",
+            "please_select_folder": "Por favor, seleccione una carpeta para continuar.",
+            "please_select_json": "Por favor, seleccione un archivo JSON para continuar.",
+            "cancelled_folder_creation": "Se canceló la creación de la carpeta.",
+            "creating_files_folders": "Creando archivos y carpetas a partir de JSON...",
+            "done_created_files_folders": "¡Listo! Se crearon archivos y carpetas a partir de JSON."
+        }
+    }
+
+    lang = locale.getdefaultlocale()[0][:2]
+
+    if lang in translations:
+        return translations[lang].get(key, key)
     else:
-        return texts["en_US"][key]
+        return translations["en"].get(key, key)
 
 
 class TreeMaker:
@@ -208,8 +206,8 @@ class TreeMakerGUI:
         self.generate_tab = GenerateTab(self.tab_control, self)
         self.create_tab = CreateTab(self.tab_control, self)
 
-        self.tab_control.add(self.generate_tab, text="Generate JSON")
-        self.tab_control.add(self.create_tab, text="Create Tree")
+        self.tab_control.add(self.generate_tab, text=get_text("generate_json"))
+        self.tab_control.add(self.create_tab, text=get_text("create_tree"))
         self.tab_control.grid(row=0, column=0, padx=10, pady=10)
 
         self.tab_control.bind("<<NotebookTabChanged>>", self.update_execute_button_text)
@@ -225,10 +223,11 @@ class TreeMakerGUI:
 
     def update_execute_button_text(self, event):
         selected_tab = self.tab_control.tab(self.tab_control.select(), "text")
-        if selected_tab == "Generate JSON":
-            self.execute_button.config(text="GENERATE")
-        elif selected_tab == "Create Tree":
-            self.execute_button.config(text="CREATE")
+        if selected_tab == get_text("generate_json"):
+            self.execute_button.config(text=get_text("generate_json").upper())
+        elif selected_tab == get_text("create_tree"):
+            self.execute_button.config(text=get_text("create_tree").upper())
+
 
     def execute(self):
         def execute_thread():
@@ -244,15 +243,16 @@ class TreeMakerGUI:
                 if folder_path_val:
                     output_file = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
                     if output_file:
-                        self.result_label.config(text="Generating JSON file...")
+                        self.result_label.config(text=get_text("generating_json"))
+
                         folder_path = Path(folder_path_val)  # Convertir la cadena a un objeto Path
                         tree_maker.save_tree_json(tree_maker.generate_tree(folder_path), output_file)  # Cambio aquí
-                        self.result_label.config(text="Done! Generated JSON file: " + output_file)
+                        self.result_label.config(text=get_text("generated_json"))
                     else:
-                        self.result_label.config(text="Cancelled JSON file generation.")
+                        self.result_label.config(text=get_text("cancelled_json_generation"))
 
                 else:
-                    self.result_label.config(text="Please select a folder to proceed.")
+                    self.result_label.config(text=get_text("select_folder_to_proceed"))
 
 
             elif selected_tab == "Create Tree":
